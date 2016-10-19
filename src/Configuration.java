@@ -9,47 +9,26 @@ import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class Configuration extends HashMap<Point, Monomer> {
     //Singleton
     private static Configuration instance = null;
+    RuleSet rules;
+    boolean isFinished;
+    double timeElapsed;
+    int markovStep = 0;
+    double timeStep;
     Simulation simulation = new Simulation();
-
-    public static Configuration getInstance() {
-        if (instance == null) {
-            instance = new Configuration();
-        }
-        return instance;
-    }
-
-    public RuleSet rules;
-    public boolean isFinished;
-    public double timeElapsed;
     private Random rand = new Random();
-    public int markovStep = 0;
-
-    public double timeStep;
     private ActionSet actions;
     private AgtionSet agtions;
     private boolean timeStepCalculated;
-
-
-    public int getSize() {
-        return this.size();
-    }
-
-
-    //================================================================================
-    // For saving Config
-    //================================================================================
-
-
     private ArrayList<Triplet<Integer, Double, ArrayList<Monomer>>> recordFrameHistory;
 
-    //================================================================================
-    // Constructors
-    //================================================================================
 
     public Configuration() {
         rules = new RuleSet();
@@ -57,11 +36,31 @@ public class Configuration extends HashMap<Point, Monomer> {
         timeElapsed = 0.0;
         timeStepCalculated = false;
     }
+
+
+    //================================================================================
+    // For saving Config
+    //================================================================================
+
+    static Configuration getInstance() {
+        if (instance == null) {
+            instance = new Configuration();
+        }
+        return instance;
+    }
+
+    //================================================================================
+    // Constructors
+    //================================================================================
+
+    int getSize() {
+        return this.size();
+    }
     //================================================================================
     // Functionality Methods
     //================================================================================
 
-    public boolean addMonomer(Monomer m) {
+    boolean addMonomer(Monomer m) {
         if (!this.containsKey(m.getLocation())) {
             this.put(m.getLocation(), m);
             return true;
@@ -71,7 +70,7 @@ public class Configuration extends HashMap<Point, Monomer> {
         }
     }
 
-    public double computeTimeStep() {
+    double computeTimeStep() {
         actions = computeActionSet();
         agtions = new AgtionSet();
 
@@ -96,7 +95,7 @@ public class Configuration extends HashMap<Point, Monomer> {
         }
     }
 
-    public void executeFrame() {
+    void executeFrame() {
         Action selectedAc = null;
         Agtion selectedAg;
 
@@ -481,7 +480,7 @@ public class Configuration extends HashMap<Point, Monomer> {
         }
     }
 
-    public void merge(HashMap<Point, Monomer> incoming) {
+    private void merge(HashMap<Point, Monomer> incoming) {
         for (Monomer m : incoming.values()) {
             put(m.getLocation(), m);
         }
@@ -529,15 +528,13 @@ public class Configuration extends HashMap<Point, Monomer> {
 
 
     //some values need to be reset before re-use of the configuration object.
-    public void resetVals() {
+    void resetVals() {
         timeElapsed = 0;
         markovStep = 0;
         timeStep = 0;
-
-
     }
 
-    public void removeMonomer(Monomer monomer) {
+    void removeMonomer(Monomer monomer) {
         byte dir = 1;
         if (monomer != null) {
             for (int i = 0; i < 6; i++) {
@@ -561,7 +558,7 @@ public class Configuration extends HashMap<Point, Monomer> {
         }
     }
 
-    public void removeMonomer(Point pt) {
+    void removeMonomer(Point pt) {
         if (this.containsKey(pt)) {
             Monomer monomer = this.get(pt);
             byte dir = 1;

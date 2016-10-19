@@ -9,9 +9,23 @@ import java.util.concurrent.TimeUnit;
 
 public class NubotCanvas extends JComponent implements NubotDraws {
 
-    Configuration map = Configuration.getInstance();
     //Singleton
     private static NubotCanvas simInstance;
+    Configuration map = Configuration.getInstance();
+    private BufferedImage canvasBFI;
+    private BufferedImage hudBFI;
+    private Graphics2D hudGFX;
+    private Graphics2D canvasGFX;
+    private Dimension canvasDimension = new Dimension(0, 0);
+    private int monomerRadius = 15;
+    private Point XYDrawOffset = new Point(0, 0);
+    public NubotCanvas(Dimension size) {
+        setSize(size);
+        canvasDimension.setSize(size);
+        XYDrawOffset.setLocation(size.width / 2, -size.height / 2);
+        init();
+
+    }
 
     public static NubotCanvas getSimInstance() {
         if (simInstance == null) {
@@ -25,20 +39,12 @@ public class NubotCanvas extends JComponent implements NubotDraws {
         simInstance = nubotCanvas;
     }
 
-    private BufferedImage canvasBFI;
-    private BufferedImage hudBFI;
-    private Graphics2D hudGFX;
-    private Graphics2D canvasGFX;
-    private Dimension canvasDimension = new Dimension(0, 0);
-    private int monomerRadius = 15;
-    private Point XYDrawOffset = new Point(0, 0);
+    public int getMonomerRadius() {
+        return monomerRadius;
+    }
 
     public void setMonomerRadius(int radius) {
         this.monomerRadius = radius;
-    }
-
-    public int getMonomerRadius() {
-        return monomerRadius;
     }
 
     public void setOffset(int x, int y) {
@@ -59,14 +65,6 @@ public class NubotCanvas extends JComponent implements NubotDraws {
 
     public Point getOffset() {
         return XYDrawOffset;
-    }
-
-    public NubotCanvas(Dimension size) {
-        setSize(size);
-        canvasDimension.setSize(size);
-        XYDrawOffset.setLocation(size.width / 2, -size.height / 2);
-        init();
-
     }
 
     public synchronized void renderNubot(Collection<Monomer> mapM) {

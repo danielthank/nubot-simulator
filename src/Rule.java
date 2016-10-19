@@ -12,25 +12,22 @@ import java.io.Serializable;
 
 public class Rule implements Serializable {
     static final long serialVersionUID = 1234L;
-
-    /**
-     * @serial
-     */
-    private String s1;
     /**
      * @serial
      */
     String s2;
-
     /**
      * @serial
      */
     String s1p;
-
     /**
      * @serial
      */
     String s2p;
+    /**
+     * @serial
+     */
+    private String s1;
     /**
      * @serial
      */
@@ -53,17 +50,6 @@ public class Rule implements Serializable {
      */
     private RuleType classification;
 
-    /**
-     * Location of monomer1 on grid
-     *
-     * @serial
-     */
-    public enum RuleType {
-        STATECHANGE, INSERTION, DELETION, BOTH, MOVEMENT
-    }
-
-    ;
-
     public Rule(String State1, String State2, Byte initialBondType, Byte S2initialDirection, String State1P, String State2P, Byte endBondType, Byte S2EndDirection) {
         this.s1 = State1;
         this.s2 = State2;
@@ -77,13 +63,24 @@ public class Rule implements Serializable {
         getRuleType();
     }
 
+    ;
+
     // accessor methods
     public String getS1() {
         return s1;
     }
 
+    // mutator methods
+    public void setS1(String s) {
+        this.s1 = s;
+    }
+
     public String getS2() {
         return s2;
+    }
+
+    public void setS2(String s) {
+        this.s2 = s;
     }
 
     public Byte getBond() {
@@ -94,12 +91,24 @@ public class Rule implements Serializable {
         return dir;
     }
 
+    public void setDir(Byte p) {
+        this.dir = p;
+    }
+
     public String getS1p() {
         return s1p;
     }
 
+    public void setS1p(String s) {
+        this.s1p = s;
+    }
+
     public String getS2p() {
         return s2p;
+    }
+
+    public void setS2p(String s) {
+        this.s2p = s;
     }
 
     public Byte getBondp() {
@@ -110,41 +119,20 @@ public class Rule implements Serializable {
         return dirp;
     }
 
+    public void setDirp(Byte p) {
+        this.dirp = p;
+    }
+
     public RuleType getClassification() {
         return classification;
-    }
-
-    // mutator methods
-    public void setS1(String s) {
-        this.s1 = s;
-    }
-
-    public void setS2(String s) {
-        this.s2 = s;
     }
 
     public void setStart(Byte b) {
         this.bond = b;
     }
 
-    public void setDir(Byte p) {
-        this.dir = p;
-    }
-
-    public void setS1p(String s) {
-        this.s1p = s;
-    }
-
-    public void setS2p(String s) {
-        this.s2p = s;
-    }
-
     public void setEnd(Byte b) {
         this.bondp = b;
-    }
-
-    public void setDirp(Byte p) {
-        this.dirp = p;
     }
 
     // get rule components
@@ -174,5 +162,14 @@ public class Rule implements Serializable {
             // this is state change
             classification = RuleType.STATECHANGE;
         }
+    }
+
+    /**
+     * Location of monomer1 on grid
+     *
+     * @serial
+     */
+    public enum RuleType {
+        STATECHANGE, INSERTION, DELETION, BOTH, MOVEMENT
     }
 }

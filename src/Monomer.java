@@ -51,8 +51,6 @@ public class Monomer implements Serializable {
     // Constructors
     //================================================================================
     public Monomer(Monomer m) {
-
-
         this.id = m.getId();
         this.state = m.getState();
         this.location = m.getLocation();
@@ -73,10 +71,6 @@ public class Monomer implements Serializable {
 
     }
 
-    public int getId() {
-        return id;
-    }
-
     public Monomer(Point p, String s) {
         this.location = p;
         this.state = s;
@@ -94,6 +88,10 @@ public class Monomer implements Serializable {
 
     }
 
+    public int getId() {
+        return id;
+    }
+
     //================================================================================
     // Accessors
     //================================================================================
@@ -102,9 +100,21 @@ public class Monomer implements Serializable {
         return location;
     }
 
+    public void setLocation(Point p) {
+        this.location = p;
+    }
+
     public String getState() {
         return state;
     }
+
+    public void setState(String s) {
+        this.state = s;
+    }
+
+    //================================================================================
+    // Mutators
+    //================================================================================
 
     public HashMap<Byte, Byte> getNeighborBonds() {
         return neighborBonds;
@@ -112,18 +122,6 @@ public class Monomer implements Serializable {
 
     public HashMap<Byte, ArrayList<Byte>> getNeighborBondDirs() {
         return neighborBondDirs;
-    }
-
-    //================================================================================
-    // Mutators
-    //================================================================================
-
-    public void setLocation(Point p) {
-        this.location = p;
-    }
-
-    public void setState(String s) {
-        this.state = s;
     }
 
     //================================================================================

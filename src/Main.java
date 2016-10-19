@@ -15,13 +15,6 @@ public class Main {
         Dimension dim = toolkit.getScreenSize();
         final Dimension windowSize = new Dimension((int) (dim.width * .9), (int) (dim.height * .9));
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Driver mainWindow = new Driver(windowSize);
-            }
-        });
-
-
+        SwingUtilities.invokeLater(() -> new Driver(windowSize));
     }
 }

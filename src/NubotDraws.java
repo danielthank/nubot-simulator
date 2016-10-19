@@ -7,11 +7,11 @@ public interface NubotDraws {
     //increment monomer radius
     public void monomerRadiusIncrement();
 
-    // set the monomer radius
-    public void setMonomerRadius(int radius);
-
     //return the monomer radius
     public int getMonomerRadius();
+
+    // set the monomer radius
+    public void setMonomerRadius(int radius);
 
     //set the offset of any drawn object, be it monomer,bond, or string
     public void setOffset(int x, int y);

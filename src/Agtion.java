@@ -29,16 +29,16 @@ public class Agtion {
         return mon;
     }
 
-    public Byte getDir() {
-        return dir;
+    public void setMon(Point p) {
+        this.mon = p;
     }
 
     //================================================================================
     // Mutators
     //================================================================================\
 
-    public void setMon(Point p) {
-        this.mon = p;
+    public Byte getDir() {
+        return dir;
     }
 
     public void setDir(Byte b) {

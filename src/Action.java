@@ -51,24 +51,24 @@ public class Action implements Serializable {
         return mon1;
     }
 
-    public Point getMon2() {
-        return mon2;
+    public void setMon1(Point p) {
+        this.mon1 = p;
     }
 
-    public Rule getRule() {
-        return rule;
+    public Point getMon2() {
+        return mon2;
     }
 
     //================================================================================
     // Mutators
     //================================================================================
 
-    public void setMon1(Point p) {
-        this.mon1 = p;
-    }
-
     public void setMon2(Point p) {
         this.mon2 = p;
+    }
+
+    public Rule getRule() {
+        return rule;
     }
 
     public void setRule(Rule r) {

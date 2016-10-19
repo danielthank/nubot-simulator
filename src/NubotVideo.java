@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class NubotVideo implements NubotDraws {
+    boolean ready = false;
     private QuickTimeWriter qtWriter;
     private double frameDuration = 0;
     private int frameRate = 60;
@@ -13,16 +14,37 @@ public class NubotVideo implements NubotDraws {
     private Dimension resolution = new Dimension(0, 0);
     private BufferedImage cFrameBFI;
     private Graphics2D frameGFX;
-    boolean ready = false;
     private int monomerRadius = 15;
     private Point XYDrawOffset = new Point(0, 0);
 
-    public void setMonomerRadius(int radius) {
-        this.monomerRadius = radius;
+    public NubotVideo(final int rWidth, final int rHeight, Format vFormat, final int framerate, final String vFileName) {
+        File vF = new File(vFileName + ".mov");
+        try {
+
+            this.qtWriter = new QuickTimeWriter(vF);
+            this.file = vF;
+            this.frameRate = framerate;
+            this.frameDuration = 1.0 / framerate;
+
+            this.resolution.setSize(rWidth, rHeight);
+            this.qtWriter.addVideoTrack(vFormat, framerate, rWidth, rHeight);
+            this.cFrameBFI = new BufferedImage(rWidth, rHeight, BufferedImage.TYPE_INT_ARGB);
+            this.frameGFX = (Graphics2D) cFrameBFI.getGraphics();
+            this.setOffset(rWidth / 2, -rHeight / 2);
+            initCGFX(this.frameGFX);
+            this.ready = true;
+        } catch (Exception exception) {
+            System.out.println("NubotVideo.java-NubotVideo(Constructor): " + exception.getMessage());
+        }
+
     }
 
     public int getMonomerRadius() {
         return this.monomerRadius;
+    }
+
+    public void setMonomerRadius(int radius) {
+        this.monomerRadius = radius;
     }
 
     public void setOffset(int x, int y) {
@@ -55,29 +77,6 @@ public class NubotVideo implements NubotDraws {
 
     public void monomerRadiusIncrement() {
         monomerRadius += 1;
-    }
-
-
-    public NubotVideo(final int rWidth, final int rHeight, Format vFormat, final int framerate, final String vFileName) {
-        File vF = new File(vFileName + ".mov");
-        try {
-
-            this.qtWriter = new QuickTimeWriter(vF);
-            this.file = vF;
-            this.frameRate = framerate;
-            this.frameDuration = 1.0 / framerate;
-
-            this.resolution.setSize(rWidth, rHeight);
-            this.qtWriter.addVideoTrack(vFormat, framerate, rWidth, rHeight);
-            this.cFrameBFI = new BufferedImage(rWidth, rHeight, BufferedImage.TYPE_INT_ARGB);
-            this.frameGFX = (Graphics2D) cFrameBFI.getGraphics();
-            this.setOffset(rWidth / 2, -rHeight / 2);
-            initCGFX(this.frameGFX);
-            this.ready = true;
-        } catch (Exception exception) {
-            System.out.println("NubotVideo.java-NubotVideo(Constructor): " + exception.getMessage());
-        }
-
     }
 
     public void clearGFX(Graphics2D gfx) {
