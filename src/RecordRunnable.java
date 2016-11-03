@@ -71,27 +71,21 @@ class RecordRunnable implements Runnable {
                        /* mapCopy.simulation.canvasXYoffset.translate(minMaxXY.getValue1().x + mapCopy.simulation.monomerRadius*2 > nubotVideo.getResWidth() ? -(minMaxXY.getValue0().x)/2 : 0, minMaxXY.getValue1().y + mapCopy.simulation.monomerRadius*2 > nubotVideo.getResHeight() ? (minMaxXY.getValue0().y)/2 : 0);
                          mapCopy.simulation.canvasXYoffset.translate(minMaxXY.getValue0().x < 0 ? (nubotDimension.width - minMaxXY.getValue1().x)/2 : 0, minMaxXY.getValue0().y < 0 ? -(nubotVideo.getResHeight() - minMaxXY.getValue1().y)/2 : 0 );    */
                     }
-                } else {
-                    mapCopy.executeFrame();
                 }
-            }
-
-            if (mapCopy.isFinished) {
-                if (nubotVideo != null) {
-                    NubotDrawer.drawNubotVideoFrame(nubotVideo.getBFI(),
-
-    /*Top left string*/   "#Monomers: " + mapCopy.size() + "\nStep: " + mapCopy.markovStep + "\nTime: " + Double.toString(mapCopy.timeElapsed),
-                            new ArrayList<Monomer>(mapCopy.values()),
-                            nubotVideo.getMonomerRadius(),
-                            nubotVideo.getOffset());
-                    nubotVideo.encodeFrame(1);
-                    nubotVideo.finish();
-                }
-                // JOptionPane.showMessageDialog(null, "No more rules can be applied!", "Finished", JOptionPane.OK_OPTION);
+            } else {
+                mapCopy.computeTimeStep();
+                mapCopy.executeFrame();
             }
         }
-        System.out.println(mapCopy.getMiddleLength());
-        log.println(mapCopy.getMiddleLength());
+        if (mapCopy.simulation.isRecording && nubotVideo != null) {
+            NubotDrawer.drawNubotVideoFrame(nubotVideo.getBFI(),
+    /*Top left string*/   "#Monomers: " + mapCopy.size() + "\nStep: " + mapCopy.markovStep + "\nTime: " + Double.toString(mapCopy.timeElapsed),
+                    new ArrayList<Monomer>(mapCopy.values()),
+                    nubotVideo.getMonomerRadius(),
+                    nubotVideo.getOffset());
+            nubotVideo.encodeFrame(1);
+            nubotVideo.finish();
+        }
         latch.countDown();
     }
 }

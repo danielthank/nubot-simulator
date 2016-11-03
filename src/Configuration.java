@@ -151,39 +151,17 @@ public class Configuration extends HashMap<Point, Monomer> {
                 timeElapsed += timeStep;
             }
         } else {
-
             isFinished = true;
-
             System.out.println("End this.simulation.");
-
             this.simulation.isRunning = false;
         }
-        if (this.simulation.isRecording) {
-            ArrayList<Monomer> monList = new ArrayList<Monomer>();
-            for (Monomer m : this.values()) {
-                monList.add(new Monomer(m));
-            }
-
-            if (this.simulation.agitationON) {
-
-            }
-            if ((timeElapsed >= this.simulation.recordingLength && simulation.isRecording) || isFinished) {
-
-                this.simulation.isRecording = false;
-                this.simulation.isRunning = false;
-                this.simulation.recordingLength = 0;
-                isFinished = true;
-
-            }
-
-        } else {
-
+        if (timeElapsed >= this.simulation.recordingLength) {
+            this.simulation.isRecording = false;
+            this.simulation.isRunning = false;
+            this.simulation.recordingLength = 2147483647;
+            isFinished = true;
         }
-
-
         ++markovStep;
-
-
     }
 
 
@@ -602,7 +580,6 @@ public class Configuration extends HashMap<Point, Monomer> {
         mapClone.clear();
         mapClone.simulation = new Simulation();
         this.simulation.isRunning = true;
-        System.out.println(mapClone.simulation.isRunning + "Test yo");
         for (Monomer m : this.values()) {
             mapClone.addMonomer(new Monomer(m));
         }

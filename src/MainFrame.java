@@ -32,9 +32,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
     private Configuration map = Configuration.getInstance();
     private Configuration mapCopy;
 
-    //Graphics
-    private Monomer posLockMon;
-
     // edit tool bar
     private JMenuBar editToolBar = new JMenuBar();
     private JDialog recordDialog;
@@ -99,7 +96,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
     private JMenuItem record = new JMenuItem("Record");
     private JMenuItem simPause = new JMenuItem("Pause");
     private JMenuItem simStop = new JMenuItem("Stop");
-    private JMenuItem ruleMk = new JMenuItem("Rule Creator");
 
     private JCheckBoxMenuItem agitationToggle = new JCheckBoxMenuItem("On");
     private JMenuItem agitationSetRate = new JMenuItem("Set Rate");
@@ -108,9 +104,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
 
     private JMenuItem usagesHelp = new JMenuItem("Configurer Usage");
     private JMenuItem about = new JMenuItem("About");
-
-    private int fps = 60;
-    private int recordingLength = 0;
 
     MainFrame(Dimension size, Driver driver1) {
         //driver
@@ -136,7 +129,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         simPause.setEnabled(false);
         simStop.setEnabled(false);
 
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         simNubotCanvas = new NubotCanvas(mainFrame.getSize());
         NubotCanvas.setSimInstance(simNubotCanvas);
@@ -148,7 +141,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         simNubotCanvas.addMouseWheelListener(this);
         simNubotCanvas.addMouseMotionListener(this);
         simNubotCanvas.addMouseListener(this);
-
 
         ////
         //Status Bar  setup
@@ -239,9 +231,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
                     mapCopy = map.getCopy();
 
                     renderNubot(map.values());
-
-                    Random rand = new Random();
-                    posLockMon = (Monomer) map.values().toArray()[rand.nextInt(map.size())];
 
                     simStart.setEnabled(true);
                     record.setEnabled(true);
@@ -353,9 +342,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             // timer.start();
             System.out.println("start");
         });
-        record.addActionListener((ActionEvent e) -> {
-            recordDialog.show();
-        });
+        record.addActionListener((ActionEvent e) -> recordDialog.setVisible(true));
         simPause.addActionListener((ActionEvent e) -> {
             map.simulation.isRunning = false;
             map.simulation.isPaused = true;
@@ -525,7 +512,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         speedSlider.setMajorTickSpacing(20);
         speedSlider.setMinorTickSpacing(10);
         speedSlider.setPaintTicks(true);
-        Hashtable speedLabels = new Hashtable();
+        Hashtable<Integer, JLabel> speedLabels = new Hashtable<>();
         speedLabels.put(-speedMax, new JLabel("Fast"));
         speedLabels.put(0, new JLabel("Normal"));
         speedLabels.put(speedMax, new JLabel("Slow"));
@@ -691,18 +678,14 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
                 } else {
                     recordingLength = Integer.parseInt(lengthField.getText()) > 0 ? Integer.parseInt(lengthField.getText()) : 1;
                 }
-                if (realToNubotCB.isSelected()) {
-                    RtN = true;
-                } else RtN = false;
+                RtN = realToNubotCB.isSelected();
                 if (!ratioField.getText().isEmpty()) {
                     ratio = Double.parseDouble(ratioField.getText()) > 0 ? Double.parseDouble(ratioField.getText()) : 1;
                 }
                 driver.recordSim(nameField.getText(), recordingsCount, recordingLength, toEnd, ratio, RtN);
             }
         });
-        cancelButton.addActionListener((ActionEvent e) -> {
-            recordDialog.hide();
-        });
+        cancelButton.addActionListener((ActionEvent e) -> recordDialog.setVisible(false));
 
         recordDialog.add(videoNameBox);
         recordDialog.add(lengthBox);
@@ -734,7 +717,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             renderNubot(map.values());
         } else if (e.getPreciseWheelRotation() == -1.0 && simNubotCanvas.getMonomerRadius() < simNubotCanvas.getWidth() / 10) {
             simNubotCanvas.setMonomerRadius((int) Math.ceil(monRadius * 1.08));
-            ;
             //if(!map.simulation.isRunning)
             renderNubot(map.values());
         }
@@ -822,13 +804,9 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             Monomer tmp = map.get(NubotDrawer.getCanvasToGridPosition(e.getPoint(), simNubotCanvas.getOffset(), simNubotCanvas.getMonomerRadius()));
             lastMon = tmp;
             //  tmp.setState("awe");
-            posLockMon = tmp;
         }
         if (e.isControlDown() && SwingUtilities.isRightMouseButton(e)) {
-
-
             if (!map.containsKey(gp)) {
-
                 String state = JOptionPane.showInputDialog("State: ");
                 if (!state.isEmpty())
                     map.addMonomer(new Monomer(gp, state));
@@ -836,7 +814,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         } else if (map.containsKey(gp) && SwingUtilities.isRightMouseButton(e)) {
             editMonMenu.show(simNubotCanvas, e.getX(), e.getY());
         }
-
         renderNubot(map.values());
     }
 
@@ -860,13 +837,10 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
     @Override
     public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-
             if (!map.simulation.isPaused) {
-
                 map.simulation.isRunning = false;
                 map.simulation.isPaused = true;
             } else {
-
                 driver.simStart();
                 map.simulation.isRunning = true;
                 map.simulation.isPaused = false;
