@@ -72,20 +72,24 @@ class RecordRunnable implements Runnable {
                          mapCopy.simulation.canvasXYoffset.translate(minMaxXY.getValue0().x < 0 ? (nubotDimension.width - minMaxXY.getValue1().x)/2 : 0, minMaxXY.getValue0().y < 0 ? -(nubotVideo.getResHeight() - minMaxXY.getValue1().y)/2 : 0 );    */
                     }
                 }
+                else {
+                    mapCopy.executeFrame();
+                }
             } else {
                 mapCopy.computeTimeStep();
                 mapCopy.executeFrame();
             }
         }
-        if (mapCopy.simulation.isRecording && nubotVideo != null) {
-            NubotDrawer.drawNubotVideoFrame(nubotVideo.getBFI(),
-    /*Top left string*/   "#Monomers: " + mapCopy.size() + "\nStep: " + mapCopy.markovStep + "\nTime: " + Double.toString(mapCopy.timeElapsed),
-                    new ArrayList<Monomer>(mapCopy.values()),
-                    nubotVideo.getMonomerRadius(),
-                    nubotVideo.getOffset());
-            nubotVideo.encodeFrame(1);
-            nubotVideo.finish();
-        }
+        System.out.println("END");
+        NubotDrawer.drawNubotVideoFrame(nubotVideo.getBFI(),
+/*Top left string*/   "#Monomers: " + mapCopy.size() + "\nStep: " + mapCopy.markovStep + "\nTime: " + Double.toString(mapCopy.timeElapsed),
+                new ArrayList<Monomer>(mapCopy.values()),
+                nubotVideo.getMonomerRadius(),
+                nubotVideo.getOffset());
+        nubotVideo.encodeFrame(1);
+        nubotVideo.finish();
+        System.out.println(mapCopy.getMiddleLength());
+        log.println(mapCopy.getMiddleLength());
         latch.countDown();
     }
 }

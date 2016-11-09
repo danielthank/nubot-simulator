@@ -11,9 +11,9 @@ public class Script {
         map.loadFile(new File("./conf/my.rules"));
 
         int numRecords = 100;
-        int recordLength = 50;
+        int recordLength = 10;
 
-        try (PrintWriter log = new PrintWriter(new BufferedWriter(new FileWriter("output.txt")))) {
+        try (PrintWriter log = new PrintWriter(new BufferedWriter(new FileWriter("output.txt", true)))) {
             ExecutorService execServ = Executors.newFixedThreadPool(10);
             CountDownLatch doneLatch = new CountDownLatch(numRecords);
             for (int i = 1; i <= numRecords; i++) {
