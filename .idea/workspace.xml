@@ -2,7 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c3302f05-9ec5-47d8-8435-8bc988183a84" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Script.java" afterPath="$PROJECT_DIR$/src/Script.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/conf/encaps.conf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/conf/linegrowth.conf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/conf/simplemove.conf" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/encaps.rules" afterPath="$PROJECT_DIR$/conf/encaps.rules" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/linegrowth.rules" afterPath="$PROJECT_DIR$/conf/linegrowth.rules" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/simplemove.rules" afterPath="$PROJECT_DIR$/conf/simplemove.rules" />
     </list>
     <ignored path="nubot-simulator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,8 +33,8 @@
       <file leaf-file-name="Configuration.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Configuration.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="11267">
-              <caret line="608" column="40" selection-start-line="608" selection-start-column="40" selection-end-line="608" selection-end-column="40" />
+            <state relative-caret-position="76">
+              <caret line="17" column="59" selection-start-line="17" selection-start-column="59" selection-end-line="17" selection-end-column="59" />
               <folding />
             </state>
           </provider>
@@ -937,8 +942,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Configuration.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="11267">
-          <caret line="608" column="40" selection-start-line="608" selection-start-column="40" selection-end-line="608" selection-end-column="40" />
+        <state relative-caret-position="76">
+          <caret line="17" column="59" selection-start-line="17" selection-start-column="59" selection-end-line="17" selection-end-column="59" />
           <folding />
         </state>
       </provider>
