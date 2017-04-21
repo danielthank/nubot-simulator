@@ -1,5 +1,5 @@
 # Nubot Simulator
-This version of nubot simulator is slightly modified from https://github.com/domardfern/Nubot-Simulator
+This version of nubot simulator is slightly modified from https://github.com/domardfern/Nubot-Simulator.
 It is a tool built to help researchers model their Nubot configurations and rulesets.
 
 # Features
