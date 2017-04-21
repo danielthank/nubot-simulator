@@ -1,3 +1,7 @@
+States:
+0 0 s0e
+
+Rules:
 s0e empty 0 E s0e s1s 1 E
 s1s empty 0 E s1s hk1.0 1 E
 hk1.0 empty 0 E hk1.0 hk1.2 1 E

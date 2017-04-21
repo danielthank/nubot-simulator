@@ -32,15 +32,10 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
     private Configuration map = Configuration.getInstance();
     private Configuration mapCopy;
 
-    //Graphics
-    private Monomer posLockMon;
-
     // edit tool bar
     private JMenuBar editToolBar = new JMenuBar();
     private JDialog recordDialog;
     private JLabel statusSimulation = new JLabel();
-    private JLabel statusRules = new JLabel();
-    private JLabel statusConfig = new JLabel();
     private JLabel statusAgitation = new JLabel();
     private JLabel statusSpeed = new JLabel();
     private JLabel statusMonomerNumber = new JLabel();
@@ -91,7 +86,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
     private JRadioButton noBond = new JRadioButton("None");
 
     private JMenuItem loadR = new JMenuItem("Load Rules");
-    private JMenuItem loadC = new JMenuItem("Load Configuration");
     private JMenuItem exportC = new JMenuItem("Export Configuration");
     private JMenuItem menuReload = new JMenuItem("Reload");
     private JMenuItem menuClear = new JMenuItem("Clear");
@@ -102,7 +96,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
     private JMenuItem record = new JMenuItem("Record");
     private JMenuItem simPause = new JMenuItem("Pause");
     private JMenuItem simStop = new JMenuItem("Stop");
-    private JMenuItem ruleMk = new JMenuItem("Rule Creator");
 
     private JCheckBoxMenuItem agitationToggle = new JCheckBoxMenuItem("On");
     private JMenuItem agitationSetRate = new JMenuItem("Set Rate");
@@ -111,9 +104,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
 
     private JMenuItem usagesHelp = new JMenuItem("Configurer Usage");
     private JMenuItem about = new JMenuItem("About");
-
-    private int fps = 60;
-    private int recordingLength = 0;
 
     MainFrame(Dimension size, Driver driver1) {
         //driver
@@ -139,7 +129,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         simPause.setEnabled(false);
         simStop.setEnabled(false);
 
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         simNubotCanvas = new NubotCanvas(mainFrame.getSize());
         NubotCanvas.setSimInstance(simNubotCanvas);
@@ -152,7 +142,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         simNubotCanvas.addMouseMotionListener(this);
         simNubotCanvas.addMouseListener(this);
 
-
         ////
         //Status Bar  setup
         ////
@@ -162,8 +151,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         statusBar.setLayout(new BoxLayout(statusBar, BoxLayout.X_AXIS));
         mainFrame.add(statusBar, BorderLayout.SOUTH);
         statusSimulation.setText("Waiting on Files ");
-        statusRules.setText("No Rules ");
-        statusConfig.setText("No config ");
         statusAgitation.setText("Agitation off ");
         statusSpeed.setText("Speed: " + speedRate);
         statusTime.setText("Time: " + map.timeElapsed);
@@ -189,9 +176,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
 
         statusBar.add(statusSimulation);
         statusBar.add(statusSeparator1);
-        statusBar.add(statusRules);
         statusBar.add(statusSeparator2);
-        statusBar.add(statusConfig);
         statusBar.add(statusSeparator3);
         statusBar.add(statusAgitation);
         statusBar.add(statusSeparator4);
@@ -212,176 +197,50 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
 
     private void initMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-
         loadR.addActionListener((ActionEvent e) -> {
             map.timeElapsed = 0;
             map.rules.clear();
             try {
                 final JFileChooser jfc = new JFileChooser();
-                jfc.setCurrentDirectory(new File("."));
-
+                jfc.setCurrentDirectory(new File("./conf"));
                 jfc.setDialogTitle("Select Rules File");
-                // Creating a file filter for .conf
                 jfc.setFileFilter(new FileFilter() {
                     @Override
                     public boolean accept(File f) {
                         if (f.isDirectory())
                             return true;
                         String fname = f.getName();
-                        if (fname.length() > 6 && fname.substring(fname.length() - 6, fname.length()).matches(".rules"))
-                            return true;
-                        return false;
+                        return fname.length() > 6 &&
+                                fname.substring(fname.length() - 6, fname.length()).matches(".rules");
                     }
-
                     @Override
                     public String getDescription() {
                         return "Nubot Rules File - .rules";
                     }
                 });
-
                 int resVal = jfc.showOpenDialog(mainFrame);
-
                 // if the ret flag results as Approve, we parse the file
                 if (resVal == JFileChooser.APPROVE_OPTION) {
-                    statusRules.setText("Loading rules ");
                     File theFile = jfc.getSelectedFile();
-                    //if the selected file is of the right extension
-                    if (theFile.length() > 5 && theFile.getName().substring(theFile.getName().length() - 6, theFile.getName().length()).matches(".rules")) {
-                        System.out.println("SD");
-                        map.rules.clear();
-                        FileReader fre = new FileReader(theFile);
-                        BufferedReader bre = new BufferedReader(fre);
-                        boolean cont = true;
+                    map.loadFile(theFile);
 
-                        while (cont) {
-                            String line = bre.readLine();
+                    map.simulation.configLoaded = true;
+                    map.simulation.rulesLoaded = true;
 
-                            if (line == null)
-                                cont = false;
+                    driver.createMapCC();
+                    mapCopy = map.getCopy();
 
-                            //if it's not a comment line and not empty, we parse
-                            if (line != null && !line.contains("[") && !line.isEmpty() && !line.equals("")) {
-                                String[] splitted = line.split(" ");
-                                map.rules.addRule(new Rule(splitted[0], splitted[1], (byte) Integer.parseInt(splitted[2]), Direction.stringToFlag(splitted[3]), splitted[4], splitted[5], (byte) Integer.parseInt(splitted[6]), Direction.stringToFlag(splitted[7])));
-                            }
-                        }
+                    renderNubot(map.values());
 
-                        bre.close();
+                    simStart.setEnabled(true);
+                    record.setEnabled(true);
 
-                        map.simulation.rulesLoaded = true;
-                        if (map.simulation.debugMode)
-                            System.out.println("We have " + map.rules.size() + " rules");
-
-                        statusRules.setText("Rules loaded ");
-
-                        if (map.simulation.rulesLoaded && map.simulation.configLoaded) {
-                            mapCopy = map.getCopy();
-                            Random rand = new Random(System.currentTimeMillis());
-                            posLockMon = (Monomer) map.values().toArray()[rand.nextInt(map.size())];
-                            System.out.println(rand.nextInt());
-                            simStart.setEnabled(true);
-                            record.setEnabled(true);
-                            statusSimulation.setText("Ready to Start ");
-                        }
-                    }
-
-                    System.out.println(map.rules.values());
+                    setStatus("Ready to Start", "Monomers: " + map.size(), null, null);
                 }
             } catch (Exception exc) {
                 System.out.println(exc.getMessage());
             }
             System.out.println("Load Rules");
-        });
-        loadC.addActionListener((ActionEvent e) -> {
-            map.timeElapsed = 0;
-            statusTime.setText("Time: " + 0.0);
-            map.clear();
-            try {
-                final JFileChooser jfc = new JFileChooser();
-                jfc.setCurrentDirectory(new File("."));
-
-                jfc.setDialogTitle("Select Configuration File");
-                // Creating a file filter for .conf
-                jfc.setFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        if (f.isDirectory())
-                            return true;
-                        String fname = f.getName();
-                        if (fname.length() > 5 && fname.substring(fname.length() - 5, fname.length()).matches(".conf"))
-                            return true;
-
-                        return false;
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "Nubot Configuration File - .conf";
-                        //return null;
-                    }
-                });
-
-                int resVal = jfc.showOpenDialog(mainFrame);
-
-                // if the ret flag results as Approve, we parse the file
-                if (resVal == JFileChooser.APPROVE_OPTION) {
-                    File theFile = jfc.getSelectedFile();
-                    //if the selected file is of the right extension
-                    if (theFile.length() > 5 && theFile.getName().substring(theFile.getName().length() - 5, theFile.getName().length()).matches(".conf")) {
-                        map.clear();
-                        boolean inBonds = false;
-                        FileReader fre = new FileReader(theFile);
-                        BufferedReader bre = new BufferedReader(fre);
-                        boolean cont = true;
-
-                        while (cont) {
-                            String line = bre.readLine();
-                            if (line == null)
-                                cont = false;
-                            //if it's not a comment line and not empty, we parse
-                            if (line != null && !line.contains("[") && !line.isEmpty() && !(line == "")) {
-                                if (!inBonds) {
-                                    if (line.contains("States:")) {
-
-                                    } else if (line.contains("Bonds:")) {
-                                        inBonds = true;
-                                    } else {
-                                        String[] splitted = line.split(" ");
-                                        map.addMonomer(new Monomer(new Point(Integer.parseInt(splitted[0]), Integer.parseInt(splitted[1])), splitted[2]));
-                                    }
-                                } else {
-                                    String[] splitted = line.split(" ");
-                                    // map.adjustBond(,);
-                                    Point monomerPoint1 = new Point(Integer.parseInt(splitted[0]), Integer.parseInt(splitted[1]));
-                                    Point monomerPoint2 = new Point(Integer.parseInt(splitted[2]), Integer.parseInt(splitted[3]));
-                                    byte bondType = (byte) Integer.parseInt(splitted[4]);
-                                    if (map.containsKey(monomerPoint1) && map.containsKey(monomerPoint2) && Direction.dirFromPoints(monomerPoint1, monomerPoint2) > 0) {
-                                        map.get(monomerPoint1).adjustBond(Direction.dirFromPoints(monomerPoint1, monomerPoint2), bondType);
-                                        map.get(monomerPoint2).adjustBond(Direction.dirFromPoints(monomerPoint2, monomerPoint1), bondType);
-                                    }
-                                }
-                            }
-                        }
-
-                        bre.close();
-                        map.simulation.configLoaded = true;
-                        driver.createMapCC();
-                        setStatus(null, null, "Config loaded ", "Monomers: " + map.size(), null, null);
-                        renderNubot(map.values());
-                        if (map.simulation.configLoaded && (map.simulation.rulesLoaded || map.simulation.agitationON)) {
-                            mapCopy = map.getCopy();
-                            Random rand = new Random();
-                            posLockMon = (Monomer) map.values().toArray()[rand.nextInt(map.size())];
-                            simStart.setEnabled(true);
-                            record.setEnabled(true);
-                            setStatus("Ready to Start", null, null, null, null, null);
-                        }
-                    }
-                }
-            } catch (Exception exc) {
-                System.out.println(exc.getMessage());
-            }
-            System.out.println("Load config");
         });
         exportC.addActionListener((ActionEvent e) -> {
             int mapSize = map.size();
@@ -434,7 +293,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             renderNubot(map.values());
             simStart.setEnabled(true);
             record.setEnabled(true);
-            setStatus(null, null, null, "Monomers: " + map.size(), "Time: " + map.timeElapsed, "Step: " + map.markovStep);
+            setStatus(null, "Monomers: " + map.size(), "Time: " + map.timeElapsed, "Step: " + map.markovStep);
             System.out.println("Reload configuration");
         });
         menuClear.addActionListener((ActionEvent e) -> {
@@ -454,8 +313,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
 
             // Statusbar Text
             statusSimulation.setText("Waiting on Files ");
-            statusRules.setText("No Rules ");
-            statusConfig.setText("No config ");
             statusAgitation.setText("Agitation off ");
             totalTime = 0.0;
             statusMonomerNumber.setText("Monomers: 0");
@@ -464,7 +321,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             simStart.setEnabled(false);
             simPause.setEnabled(false);
             simStop.setEnabled(false);
-            loadC.setEnabled(true);
             loadR.setEnabled(true);
             renderNubot(map.values());
             System.out.println("clear ");
@@ -478,7 +334,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             map.simulation.isRunning = true;
             map.isFinished = false;
             map.simulation.isPaused = false;
-            loadC.setEnabled(false);
             loadR.setEnabled(false);
             simStart.setEnabled(false);
             simPause.setEnabled(true);
@@ -487,9 +342,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             // timer.start();
             System.out.println("start");
         });
-        record.addActionListener((ActionEvent e) -> {
-            recordDialog.show();
-        });
+        record.addActionListener((ActionEvent e) -> recordDialog.setVisible(true));
         simPause.addActionListener((ActionEvent e) -> {
             map.simulation.isRunning = false;
             map.simulation.isPaused = true;
@@ -503,7 +356,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             //timer.stop();
             map.timeElapsed = 0;
             driver.simStop();
-            loadC.setEnabled(true);
             loadR.setEnabled(true);
             System.out.println("stop");
         });
@@ -529,7 +381,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
                 agitationToggle.setState(false);
             } else {
                 map.simulation.agitationON = agitationToggle.getState();
-                if (map.simulation.agitationON == true)
+                if (map.simulation.agitationON)
                     statusAgitation.setText("Agitation On: " + map.simulation.agitationRate);
                 else
                     statusAgitation.setText("Agitation Off ");
@@ -566,7 +418,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         });
         // file.add(ruleMk);
         file.add(loadR);
-        file.add(loadC);
         file.add(exportC);
         file.add(new JSeparator(SwingConstants.HORIZONTAL));
         file.add(menuReload);
@@ -661,7 +512,7 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         speedSlider.setMajorTickSpacing(20);
         speedSlider.setMinorTickSpacing(10);
         speedSlider.setPaintTicks(true);
-        Hashtable speedLabels = new Hashtable();
+        Hashtable<Integer, JLabel> speedLabels = new Hashtable<>();
         speedLabels.put(-speedMax, new JLabel("Fast"));
         speedLabels.put(0, new JLabel("Normal"));
         speedLabels.put(speedMax, new JLabel("Slow"));
@@ -827,18 +678,14 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
                 } else {
                     recordingLength = Integer.parseInt(lengthField.getText()) > 0 ? Integer.parseInt(lengthField.getText()) : 1;
                 }
-                if (realToNubotCB.isSelected()) {
-                    RtN = true;
-                } else RtN = false;
+                RtN = realToNubotCB.isSelected();
                 if (!ratioField.getText().isEmpty()) {
                     ratio = Double.parseDouble(ratioField.getText()) > 0 ? Double.parseDouble(ratioField.getText()) : 1;
                 }
                 driver.recordSim(nameField.getText(), recordingsCount, recordingLength, toEnd, ratio, RtN);
             }
         });
-        cancelButton.addActionListener((ActionEvent e) -> {
-            recordDialog.hide();
-        });
+        cancelButton.addActionListener((ActionEvent e) -> recordDialog.setVisible(false));
 
         recordDialog.add(videoNameBox);
         recordDialog.add(lengthBox);
@@ -870,7 +717,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             renderNubot(map.values());
         } else if (e.getPreciseWheelRotation() == -1.0 && simNubotCanvas.getMonomerRadius() < simNubotCanvas.getWidth() / 10) {
             simNubotCanvas.setMonomerRadius((int) Math.ceil(monRadius * 1.08));
-            ;
             //if(!map.simulation.isRunning)
             renderNubot(map.values());
         }
@@ -937,13 +783,9 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         renderNubot(map.values());
     }
 
-    void setStatus(String simStatus, String rules, String config, String numMonomers, String time, String step) {
+    void setStatus(String simStatus, String numMonomers, String time, String step) {
         if (simStatus != null && !simStatus.isEmpty())
             statusSimulation.setText(simStatus);
-        if (rules != null && !rules.isEmpty())
-            statusRules.setText(rules);
-        if (config != null && !config.isEmpty())
-            statusConfig.setText(config);
         if (numMonomers != null && !numMonomers.isEmpty())
             statusMonomerNumber.setText(numMonomers);
         if (time != null && !time.isEmpty())
@@ -962,13 +804,9 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
             Monomer tmp = map.get(NubotDrawer.getCanvasToGridPosition(e.getPoint(), simNubotCanvas.getOffset(), simNubotCanvas.getMonomerRadius()));
             lastMon = tmp;
             //  tmp.setState("awe");
-            posLockMon = tmp;
         }
         if (e.isControlDown() && SwingUtilities.isRightMouseButton(e)) {
-
-
             if (!map.containsKey(gp)) {
-
                 String state = JOptionPane.showInputDialog("State: ");
                 if (!state.isEmpty())
                     map.addMonomer(new Monomer(gp, state));
@@ -976,7 +814,6 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
         } else if (map.containsKey(gp) && SwingUtilities.isRightMouseButton(e)) {
             editMonMenu.show(simNubotCanvas, e.getX(), e.getY());
         }
-
         renderNubot(map.values());
     }
 
@@ -1000,13 +837,10 @@ class MainFrame implements ComponentListener, MouseWheelListener, MouseMotionLis
     @Override
     public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-
             if (!map.simulation.isPaused) {
-
                 map.simulation.isRunning = false;
                 map.simulation.isPaused = true;
             } else {
-
                 driver.simStart();
                 map.simulation.isRunning = true;
                 map.simulation.isPaused = false;

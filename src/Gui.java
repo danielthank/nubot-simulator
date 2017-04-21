@@ -1,5 +1,5 @@
 //
-// Main.java
+// Gui.java
 // Nubot Simulator
 //
 // Created by David Chavez on 4/1/14.
@@ -9,7 +9,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class Main {
+public class Gui {
     public static void main(String args[]) {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Dimension dim = toolkit.getScreenSize();

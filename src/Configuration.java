@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.io.*;
 
 public class Configuration extends HashMap<Point, Monomer> {
     //Singleton
@@ -68,6 +69,14 @@ public class Configuration extends HashMap<Point, Monomer> {
             System.out.println("There is already a monomer at that location!");
             return false;
         }
+    }
+
+    int getMiddleLength() {
+        int middle = 0, cnt = 0;
+        for (Monomer m : this.values()) {
+            if (m.getLocation().getY() == middle) cnt++;
+        }
+        return cnt;
     }
 
     double computeTimeStep() {
@@ -142,39 +151,17 @@ public class Configuration extends HashMap<Point, Monomer> {
                 timeElapsed += timeStep;
             }
         } else {
-
             isFinished = true;
-
             System.out.println("End this.simulation.");
-
             this.simulation.isRunning = false;
         }
-        if (this.simulation.isRecording) {
-            ArrayList<Monomer> monList = new ArrayList<Monomer>();
-            for (Monomer m : this.values()) {
-                monList.add(new Monomer(m));
-            }
-
-            if (this.simulation.agitationON) {
-
-            }
-            if ((timeElapsed >= this.simulation.recordingLength && simulation.isRecording) || isFinished) {
-
-                this.simulation.isRecording = false;
-                this.simulation.isRunning = false;
-                this.simulation.recordingLength = 0;
-                isFinished = true;
-
-            }
-
-        } else {
-
+        if (timeElapsed >= this.simulation.recordingLength) {
+            this.simulation.isRecording = false;
+            this.simulation.isRunning = false;
+            this.simulation.recordingLength = 2147483647;
+            isFinished = true;
         }
-
-
         ++markovStep;
-
-
     }
 
 
@@ -588,21 +575,55 @@ public class Configuration extends HashMap<Point, Monomer> {
 
     }
 
-    public Configuration getCopy() {
+    Configuration getCopy() {
         Configuration mapClone = (Configuration) this.clone();
         mapClone.clear();
         mapClone.simulation = new Simulation();
         this.simulation.isRunning = true;
-        System.out.println(mapClone.simulation.isRunning + "Test yo");
-
-
         for (Monomer m : this.values()) {
             mapClone.addMonomer(new Monomer(m));
         }
-
-
         return mapClone;
-
     }
 
+    void loadFile(File file) {
+        this.clear();
+        this.rules.clear();
+        int state = 0;
+        try (BufferedReader bre = new BufferedReader(new FileReader(file))) {
+            boolean cont = true;
+            while (cont) {
+                String line = bre.readLine();
+                if (line == null)
+                    cont = false;
+                //if it's not a comment line and not empty, we parse
+                if (line != null && !line.contains("[") && !line.isEmpty() && !(line == "")) {
+                    if (line.contains("States:")) {
+                        state = 1;
+                    } else if (line.contains("Bonds:")) {
+                        state = 2;
+                    } else if (line.contains("Rules:")) {
+                        state = 3;
+                    } else {
+                        String[] splitted = line.split(" ");
+                        if (state == 1) {
+                            this.addMonomer(new Monomer(new Point(Integer.parseInt(splitted[0]), Integer.parseInt(splitted[1])), splitted[2]));
+                        } else if (state == 2) {
+                            // map.adjustBond(,);
+                            Point monomerPoint1 = new Point(Integer.parseInt(splitted[0]), Integer.parseInt(splitted[1]));
+                            Point monomerPoint2 = new Point(Integer.parseInt(splitted[2]), Integer.parseInt(splitted[3]));
+                            byte bondType = (byte) Integer.parseInt(splitted[4]);
+                            if (this.containsKey(monomerPoint1) && this.containsKey(monomerPoint2) && Direction.dirFromPoints(monomerPoint1, monomerPoint2) > 0) {
+                                this.get(monomerPoint1).adjustBond(Direction.dirFromPoints(monomerPoint1, monomerPoint2), bondType);
+                                this.get(monomerPoint2).adjustBond(Direction.dirFromPoints(monomerPoint2, monomerPoint1), bondType);
+                            }
+                        } else if (state == 3) {
+                            this.rules.addRule(new Rule(splitted[0], splitted[1], (byte) Integer.parseInt(splitted[2]), Direction.stringToFlag(splitted[3]), splitted[4], splitted[5], (byte) Integer.parseInt(splitted[6]), Direction.stringToFlag(splitted[7])));
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+        }
+    }
 }

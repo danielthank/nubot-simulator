@@ -2,8 +2,10 @@ import org.monte.media.quicktime.QuickTimeWriter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.io.*;
 
 class Driver {
     //Video
@@ -28,20 +30,18 @@ class Driver {
                 try {
                     if (!map.simulation.isRecording)
                         Thread.sleep((long) (map.simulation.speedRate * 1000.0 * map.timeStep));
-
                     if (map.simulation.animate) {
                         map.computeTimeStep();
                         map.executeFrame();
                         mainFrame.renderNubot(map.values());
                     }
-
-                    mainFrame.setStatus("Simulating...", null, null, "Monomers: " + map.getSize(), "Time: " + map.timeElapsed, "Step: " + map.markovStep);
+                    mainFrame.setStatus("Simulating...", "Monomers: " + map.getSize(), "Time: " + map.timeElapsed, "Step: " + map.markovStep);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
             }
 
-            mainFrame.setStatus("Simulation finished ", null, null, null, null, null);
+            mainFrame.setStatus("Simulation finished ", null, null, null);
             if (map.isFinished) {
                 JOptionPane.showMessageDialog(simNubotCanvas, "No more rules can be applied!", "Finished", JOptionPane.OK_OPTION);
             }
@@ -64,17 +64,25 @@ class Driver {
     }
 
     void recordSim(String vidName, int numRecords, int recordLength, boolean toEnd, double ratio, boolean RtoN) {
-
         ExecutorService execServ = Executors.newFixedThreadPool(numRecords);
-
-        for (int i = 1; i <= numRecords; i++) {
-            Configuration rMap = mapCC.getCopy();
-            rMap.simulation.recordingLength = recordLength;
-            rMap.simulation.isRecording = true;
-            rMap.simulation.isRunning = true;
-
-            execServ.submit(new RecordRunnable(new NubotVideo(800, 600, QuickTimeWriter.VIDEO_PNG, 20, vidName + i), rMap, ratio));
+        CountDownLatch doneLatch = new CountDownLatch(numRecords);
+        try (PrintWriter log = new PrintWriter(new BufferedWriter(new FileWriter("output.txt", true)))) {
+            for (int i = 1; i <= numRecords; i++) {
+                Configuration rMap = mapCC.getCopy();
+                rMap.simulation.recordingLength = recordLength;
+                rMap.simulation.isRecording = true;
+                rMap.simulation.isRunning = true;
+                execServ.submit(new RecordRunnable(new NubotVideo(800, 600, QuickTimeWriter.VIDEO_PNG, 20, vidName + i), rMap, ratio, log, doneLatch));
+            }
+            execServ.shutdown();
+            try {
+                doneLatch.await();
+            } catch(InterruptedException e) {
+                System.out.println("interrupted");
+            }
         }
-        execServ.shutdown();
+        catch(IOException e) {
+            System.out.println("ERROR");
+        }
     }
 }
