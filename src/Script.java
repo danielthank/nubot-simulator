@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 public class Script {
     public static void main(String args[]) {
         Configuration map = new Configuration();
-        map.loadFile(new File("./conf/my.rules"));
+        map.loadFile(new File("./conf/new.rules"));
 
         int numRecords = 100;
         int recordLength = 10;
